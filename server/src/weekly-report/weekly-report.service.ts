@@ -25,30 +25,13 @@ export class WeeklyReportService {
     const redLineResult = await this.llmService.checkRedLine(params.items);
     console.log('[WeeklyReportService] red line check result:', redLineResult);
 
-    // Case 1: All content is pure流水账 → reject entirely
-    if (redLineResult.shouldReject) {
+    if (redLineResult.isRedLine) {
       return {
         code: 200,
         msg: 'red_line_rejected',
         data: {
           status: 'rejected',
-          reject_reason: redLineResult.rejectReason,
-        },
-      };
-    }
-
-    // Case 2: Some items are "已达成无风险的常规工作" → remove them, save the rest
-    const itemsToSave = redLineResult.filteredItems;
-    const removedItems = redLineResult.removedItems;
-
-    // If all items were removed (none passed the filter), reject
-    if (itemsToSave.length === 0 && removedItems.length > 0) {
-      return {
-        code: 200,
-        msg: 'red_line_rejected',
-        data: {
-          status: 'rejected',
-          reject_reason: '提交的事项均为已达成无风险的常规工作，请重新填写暴露偏差、申请协同或重要事项。',
+          reject_reason: redLineResult.reason,
         },
       };
     }
@@ -73,9 +56,9 @@ export class WeeklyReportService {
 
     console.log('[WeeklyReportService] inserted report:', report);
 
-    // Insert filtered items only
-    if (itemsToSave.length > 0) {
-      const itemValues = itemsToSave.map((item, index) => ({
+    // Insert items
+    if (params.items.length > 0) {
+      const itemValues = params.items.map((item, index) => ({
         report_id: report.id,
         category: item.category,
         content: item.content,
@@ -117,15 +100,12 @@ export class WeeklyReportService {
       reportId: report.id,
     });
 
-    // Return success with info about removed items (if any)
     return {
       code: 200,
       msg: 'success',
       data: {
         id: report.id,
         status: 'submitted',
-        removed_items: removedItems.length > 0 ? removedItems : undefined,
-        removed_count: removedItems.length > 0 ? removedItems.length : undefined,
       },
     };
   }

@@ -147,18 +147,7 @@ export default function IndexPage() {
         return
       }
 
-      // Show removed items warning if any
-      if (data?.removed_items && data.removed_items.length > 0) {
-        const removedDesc = data.removed_items.map((r: any) => `"${r.content}"`).join('、')
-        Taro.showModal({
-          title: '提交成功',
-          content: `以下事项为已达成无风险的常规工作，已被系统自动移除：\n${removedDesc}`,
-          showCancel: false,
-          confirmText: '知道了',
-        })
-      } else {
-        Taro.showToast({ title: '提交成功', icon: 'success' })
-      }
+      Taro.showToast({ title: '提交成功', icon: 'success' })
       setSubmitting(false)
       setSubmitterName('')
       setDeviationItems([createEmptyItem()])
