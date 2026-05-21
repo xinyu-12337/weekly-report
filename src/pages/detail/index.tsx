@@ -187,20 +187,21 @@ export default function DetailPage() {
                   <CardTitle className="text-base">{config.title}</CardTitle>
                 </View>
               </CardHeader>
-              <CardContent className="gap-3">
+              <CardContent className="gap-2">
+                {/* Table Header */}
+                <View className="flex flex-row items-center gap-2 px-1 pb-1">
+                  <Text className="block text-xs font-medium text-gray-400 flex-1">事项内容</Text>
+                  <Text className="block text-xs font-medium text-gray-400 shrink-0" style={{ width: '35%' }}>总经理批复</Text>
+                </View>
                 {items.map((item, index) => (
-                  <View key={item.id} className="border-b border-gray-100 last:border-b-0 pb-3 last:pb-0">
-                    <View className="flex flex-row items-start gap-2">
-                      <Text className="block text-xs text-gray-400 shrink-0 mt-1">{index + 1}.</Text>
-                      <Text className="block text-sm text-gray-800 flex-1">{item.content}</Text>
-                    </View>
-
-                    {/* Manager Reply */}
-                    <View className="mt-2 ml-4">
-                      <View className="flex flex-row items-center gap-1 mb-1">
-                        <MessageSquare size={12} color="#6b7280" />
-                        <Text className="block text-xs font-medium text-gray-500">总经理批复</Text>
+                  <View key={item.id} className="flex flex-row items-start gap-2 border-b border-gray-100 last:border-b-0 pb-2 last:pb-0 mb-2 last:mb-0">
+                    <View className="flex-1">
+                      <View className="flex flex-row items-start gap-1">
+                        <Text className="block text-xs text-gray-400 shrink-0 mt-1">{index + 1}.</Text>
+                        <Text className="block text-sm text-gray-800">{item.content}</Text>
                       </View>
+                    </View>
+                    <View className="shrink-0" style={{ width: '35%' }}>
                       {item.manager_reply ? (
                         <View className="bg-blue-50 rounded-lg p-2">
                           <Text className="block text-sm text-blue-800">{item.manager_reply}</Text>
@@ -216,19 +217,19 @@ export default function DetailPage() {
                               maxlength={500}
                             />
                           </View>
-                          <View className="flex flex-row gap-2">
+                          <View className="flex flex-row gap-1">
                             <Button size="sm" variant="outline" onClick={() => { setReplyingId(null); setReplyText('') }}>
                               <Text className="text-xs">取消</Text>
                             </Button>
                             <Button size="sm" className="bg-blue-600 text-white" disabled={submittingReply} onClick={() => handleSubmitReply(item.id)}>
-                              <Text className="text-xs text-white">{submittingReply ? '提交中...' : '确认批复'}</Text>
+                              <Text className="text-xs text-white">{submittingReply ? '...' : '确认'}</Text>
                             </Button>
                           </View>
                         </View>
                       ) : (
                         <Button variant="ghost" size="sm" onClick={() => { setReplyingId(item.id); setReplyText('') }}>
                           <MessageSquare size={12} color="#2563eb" />
-                          <Text className="text-xs text-blue-600">添加批复</Text>
+                          <Text className="text-xs text-blue-600">批复</Text>
                         </Button>
                       )}
                     </View>

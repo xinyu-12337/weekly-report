@@ -196,8 +196,16 @@ export default function IndexPage() {
               <Text className="block text-sm text-gray-400">暂无事项，点击右上角&ldquo;新增&rdquo;添加</Text>
             </View>
           )}
+          {/* Table Header */}
+          {items.length > 0 && (
+            <View className="flex flex-row items-center gap-2 px-1 pb-1">
+              <Text className="block text-xs font-medium text-gray-400 flex-1">事项内容</Text>
+              <Text className="block text-xs font-medium text-gray-400 shrink-0" style={{ width: '30%' }}>总经理批复</Text>
+              <View style={{ width: 32 }} />
+            </View>
+          )}
           {items.map((item, index) => (
-            <View key={item.id} className="flex flex-row items-start gap-2">
+            <View key={item.id} className="flex flex-row items-center gap-2">
               <View className="flex-1">
                 <View className="bg-gray-50 rounded-lg px-3 py-2">
                   <UiInput
@@ -207,15 +215,16 @@ export default function IndexPage() {
                     onInput={(e) => updateItem(category, item.id, e.detail.value)}
                   />
                 </View>
-                <View className="mt-1 px-1">
-                  <Text className="block text-xs text-gray-300">总经理批复：</Text>
-                  <Text className="block text-xs text-gray-300">暂无</Text>
+              </View>
+              <View className="shrink-0" style={{ width: '30%' }}>
+                <View className="bg-gray-50 rounded-lg px-2 py-2 flex items-center justify-center">
+                  <Text className="block text-xs text-gray-300 text-center">待批复</Text>
                 </View>
               </View>
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0 mt-1"
+                className="shrink-0"
                 onClick={() => removeItem(category, item.id)}
               >
                 <Trash2 size={16} color="#ef4444" />
