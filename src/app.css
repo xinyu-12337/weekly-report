@@ -17,8 +17,8 @@ root-portal {
   --card-foreground: lab(2.75381% 0 0);
   --popover: lab(100% 0 0);
   --popover-foreground: lab(2.75381% 0 0);
-  --primary: lab(7.78201% -0.0000149012 0);
-  --primary-foreground: lab(98.26% 0 0);
+  --primary: lab(41.2243% 38.4947 -63.8448);
+  --primary-foreground: lab(100% 0 0);
   --secondary: lab(96.52% -0.0000298023 0.0000119209);
   --secondary-foreground: lab(7.78201% -0.0000149012 0);
   --muted: lab(96.52% -0.0000298023 0.0000119209);

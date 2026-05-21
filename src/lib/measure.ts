@@ -12,7 +12,7 @@ const toNumber = (v: unknown) => {
     return 0
 }
 
-const normalizeRect = (r: Record<string, unknown> | null | undefined): Rect | null => {
+const normalizeRect = (r: Record<string, unknown> | DOMRect | null | undefined): Rect | null => {
     if (!r) return null
     return {
         left: toNumber(r.left),
@@ -42,7 +42,7 @@ const getRectH5 = (id: string): Rect | null => {
     const el = document.getElementById(id)
     if (!el) return null
     const r = el.getBoundingClientRect()
-    return normalizeRect(r)
+    return normalizeRect(r as unknown as Record<string, unknown>)
 }
 
 export const getRectById = (id: string): Promise<Rect | null> => {
@@ -54,7 +54,7 @@ export const getRectById = (id: string): Promise<Rect | null> => {
             .select(`#${id}`)
             .boundingClientRect(res => {
                 const rect = Array.isArray(res) ? res[0] : res
-                resolve(normalizeRect(rect))
+                resolve(normalizeRect(rect as unknown as Record<string, unknown>))
             })
             .exec()
     })
