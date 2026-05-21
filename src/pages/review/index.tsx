@@ -3,9 +3,10 @@ import Taro from '@tarojs/taro'
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Network } from '@/network'
-import { FileText, Clock, User, List } from 'lucide-react-taro'
+import { FileText, ChevronRight, Clock, User, List } from 'lucide-react-taro'
 
 interface Report {
   id: string
@@ -22,7 +23,7 @@ const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'destruct
   reviewed: { label: '已批复', variant: 'secondary' },
 }
 
-export default function HistoryPage() {
+export default function ReviewPage() {
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -33,7 +34,7 @@ export default function HistoryPage() {
   const fetchReports = async () => {
     try {
       const res = await Network.request({ url: '/api/weekly-report/list' })
-      console.log('history response:', res.data)
+      console.log('review list response:', res.data)
       const data = res.data?.data ?? res.data
       setReports(Array.isArray(data) ? data : [])
     } catch (err) {
@@ -57,7 +58,7 @@ export default function HistoryPage() {
     return (
       <View className="w-full min-h-full bg-gray-50 p-4 gap-3 flex flex-col">
         {[1, 2, 3].map(i => (
-          <Skeleton key={i} className="w-full h-20 rounded-xl" />
+          <Skeleton key={i} className="w-full h-24 rounded-xl" />
         ))}
       </View>
     )
@@ -67,7 +68,8 @@ export default function HistoryPage() {
     <View className="w-full min-h-full bg-gray-50 pb-4">
       {/* Header */}
       <View className="bg-blue-600 px-4 pt-3 pb-5">
-        <Text className="block text-lg font-bold text-white">提交历史</Text>
+        <Text className="block text-lg font-bold text-white">周报查看</Text>
+        <Text className="block text-sm text-blue-100 mt-1">共 {reports.length} 份周报</Text>
       </View>
 
       <View className="px-4 -mt-3 gap-3 flex flex-col">
@@ -83,28 +85,39 @@ export default function HistoryPage() {
         {reports.map(report => {
           const statusConfig = STATUS_MAP[report.status] || STATUS_MAP.submitted
           return (
-            <Card key={report.id} onClick={() => goToDetail(report.id)}>
+            <Card key={report.id}>
               <CardContent className="p-4">
-                <View className="flex flex-row items-center gap-2 mb-2">
-                  <User size={14} color="#6b7280" className="shrink-0" />
-                  <Text className="block text-sm font-semibold text-gray-900">{report.submitter_name}</Text>
-                  <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+                <View className="flex flex-row items-center justify-between">
+                  <View className="flex-1 min-w-0">
+                    {/* Row 1: Submitter + Status */}
+                    <View className="flex flex-row items-center gap-2 mb-2">
+                      <User size={14} color="#6b7280" className="shrink-0" />
+                      <Text className="block text-sm font-semibold text-gray-900">{report.submitter_name}</Text>
+                      <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+                    </View>
+                    {/* Row 2: Time + Item count */}
+                    <View className="flex flex-row items-center gap-3">
+                      <View className="flex flex-row items-center gap-1">
+                        <Clock size={12} color="#9ca3af" className="shrink-0" />
+                        <Text className="block text-xs text-gray-400">{formatDate(report.created_at)}</Text>
+                      </View>
+                      <View className="flex flex-row items-center gap-1">
+                        <List size={12} color="#9ca3af" className="shrink-0" />
+                        <Text className="block text-xs text-gray-400">{report.item_count ?? 0} 项事项</Text>
+                      </View>
+                    </View>
+                  </View>
+                  {/* View Detail Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 ml-3"
+                    onClick={() => goToDetail(report.id)}
+                  >
+                    <Text className="text-xs text-blue-600">查看详情</Text>
+                    <ChevronRight size={14} color="#2563eb" />
+                  </Button>
                 </View>
-                <View className="flex flex-row items-center gap-3">
-                  <View className="flex flex-row items-center gap-1">
-                    <Clock size={12} color="#9ca3af" className="shrink-0" />
-                    <Text className="block text-xs text-gray-400">{formatDate(report.created_at)}</Text>
-                  </View>
-                  <View className="flex flex-row items-center gap-1">
-                    <List size={12} color="#9ca3af" className="shrink-0" />
-                    <Text className="block text-xs text-gray-400">{report.item_count ?? 0} 项事项</Text>
-                  </View>
-                </View>
-                {report.status === 'rejected' && report.reject_reason && (
-                  <View className="mt-2 bg-red-50 rounded-lg p-2">
-                    <Text className="block text-xs text-red-600 line-clamp-2">退回：{report.reject_reason}</Text>
-                  </View>
-                )}
               </CardContent>
             </Card>
           )

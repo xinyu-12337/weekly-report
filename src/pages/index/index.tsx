@@ -2,13 +2,12 @@ import { View, Text } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input as UiInput } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Network } from '@/network'
-import { Plus, Trash2, Upload, FileText, Clock, Send, CircleAlert } from 'lucide-react-taro'
+import { Plus, Trash2, Upload, FileText, Send, CircleAlert } from 'lucide-react-taro'
 import './index.css'
 
 interface ReportItem {
@@ -72,10 +71,7 @@ export default function IndexPage() {
 
   const handleChooseFile = async () => {
     try {
-      const res = await Taro.chooseMessageFile({
-        count: 5,
-        type: 'all',
-      })
+      const res = await Taro.chooseMessageFile({ count: 5, type: 'all' })
       if (res.tempFiles?.length) {
         setUploadingFile(true)
         for (const file of res.tempFiles) {
@@ -153,8 +149,6 @@ export default function IndexPage() {
 
       Taro.showToast({ title: '提交成功', icon: 'success' })
       setSubmitting(false)
-
-      // 重置表单
       setSubmitterName('')
       setDeviationItems([createEmptyItem()])
       setCollaborationItems([createEmptyItem()])
@@ -167,72 +161,47 @@ export default function IndexPage() {
     }
   }
 
-  const goToHistory = () => {
-    Taro.navigateTo({ url: '/pages/history/index' })
-  }
-
   const renderSection = (category: CategoryKey) => {
     const config = CATEGORY_CONFIG[category]
     const items = itemsMap[category]
 
     return (
-      <Card>
-        <CardHeader className="pb-3">
-          <View className="flex flex-row items-center justify-between">
-            <View className="flex flex-row items-center gap-2">
-              <View className="w-1 h-4 rounded-full" style={{ backgroundColor: config.color }} />
-              <CardTitle className="text-base">{config.title}</CardTitle>
-              {config.required && <Badge variant="destructive" className="text-xs">必填</Badge>}
+      <View className="mb-4">
+        {/* Section Header */}
+        <View className="flex flex-row items-center justify-between mb-2 px-1">
+          <View className="flex flex-row items-center gap-2">
+            <View className="w-1 h-4 rounded-full" style={{ backgroundColor: config.color }} />
+            <Text className="block text-sm font-semibold text-gray-800">{config.title}</Text>
+            {config.required && <Badge variant="destructive" className="text-xs">必填</Badge>}
+          </View>
+          <Button variant="ghost" size="sm" onClick={() => addItem(category)}>
+            <Plus size={14} color="#2563eb" />
+            <Text className="text-blue-600 text-xs">新增</Text>
+          </Button>
+        </View>
+        {/* Items */}
+        {items.length === 0 && (
+          <View className="py-3 flex items-center justify-center bg-gray-50 rounded-lg">
+            <Text className="block text-xs text-gray-400">暂无事项，点击新增</Text>
+          </View>
+        )}
+        {items.map((item, index) => (
+          <View key={item.id} className="flex flex-row items-center gap-2 mb-2">
+            <Text className="block text-xs text-gray-300 shrink-0">{index + 1}</Text>
+            <View className="flex-1 bg-gray-50 rounded-lg px-3 py-2">
+              <UiInput
+                className="w-full bg-transparent text-sm"
+                placeholder="请输入事项内容"
+                value={item.content}
+                onInput={(e) => updateItem(category, item.id, e.detail.value)}
+              />
             </View>
-            <Button variant="ghost" size="sm" onClick={() => addItem(category)}>
-              <Plus size={16} color="#2563eb" />
-              <Text className="text-blue-600 text-sm">新增</Text>
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => removeItem(category, item.id)}>
+              <Trash2 size={14} color="#ef4444" />
             </Button>
           </View>
-        </CardHeader>
-        <CardContent className="gap-2">
-          {items.length === 0 && (
-            <View className="py-4 flex items-center justify-center">
-              <Text className="block text-sm text-gray-400">暂无事项，点击右上角&ldquo;新增&rdquo;添加</Text>
-            </View>
-          )}
-          {/* Table Header */}
-          {items.length > 0 && (
-            <View className="flex flex-row items-center gap-2 px-1 pb-1">
-              <Text className="block text-xs font-medium text-gray-400 flex-1">事项内容</Text>
-              <Text className="block text-xs font-medium text-gray-400 shrink-0" style={{ width: '30%' }}>总经理批复</Text>
-              <View style={{ width: 32 }} />
-            </View>
-          )}
-          {items.map((item, index) => (
-            <View key={item.id} className="flex flex-row items-center gap-2">
-              <View className="flex-1">
-                <View className="bg-gray-50 rounded-lg px-3 py-2">
-                  <UiInput
-                    className="w-full bg-transparent text-sm"
-                    placeholder={`事项 ${index + 1}：请输入内容`}
-                    value={item.content}
-                    onInput={(e) => updateItem(category, item.id, e.detail.value)}
-                  />
-                </View>
-              </View>
-              <View className="shrink-0" style={{ width: '30%' }}>
-                <View className="bg-gray-50 rounded-lg px-2 py-2 flex items-center justify-center">
-                  <Text className="block text-xs text-gray-300 text-center">待批复</Text>
-                </View>
-              </View>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                onClick={() => removeItem(category, item.id)}
-              >
-                <Trash2 size={16} color="#ef4444" />
-              </Button>
-            </View>
-          ))}
-        </CardContent>
-      </Card>
+        ))}
+      </View>
     )
   }
 
@@ -240,87 +209,70 @@ export default function IndexPage() {
     <View className="w-full min-h-full bg-gray-50 pb-6">
       {/* Header */}
       <View className="bg-blue-600 px-4 pt-4 pb-6">
-        <View className="flex flex-row items-center justify-between">
-          <View>
-            <Text className="block text-xl font-bold text-white">周报邮筒</Text>
-            <Text className="block text-sm text-blue-100 mt-1">暴露偏差，申请协同</Text>
-          </View>
-          <Button variant="secondary" size="sm" onClick={goToHistory}>
-            <Clock size={14} color="#2563eb" />
-            <Text className="text-blue-600 text-xs">历史</Text>
-          </Button>
-        </View>
+        <Text className="block text-xl font-bold text-white">周报邮筒</Text>
+        <Text className="block text-sm text-blue-100 mt-1">暴露偏差，申请协同</Text>
       </View>
 
-      <View className="px-4 -mt-4 gap-4 flex flex-col">
+      <View className="px-4 -mt-4 gap-3 flex flex-col">
         {/* Submitter Name */}
-        <Card>
-          <CardContent className="p-4">
-            <Text className="block text-sm font-medium text-gray-700 mb-2">提交人姓名</Text>
-            <View className="bg-gray-50 rounded-lg px-3 py-2">
-              <UiInput
-                className="w-full bg-transparent text-sm"
-                placeholder="请输入您的姓名"
-                value={submitterName}
-                onInput={(e) => setSubmitterName(e.detail.value)}
-              />
-            </View>
-          </CardContent>
-        </Card>
+        <View className="bg-white rounded-xl p-4 shadow-sm">
+          <Text className="block text-sm font-medium text-gray-700 mb-2">提交人姓名</Text>
+          <View className="bg-gray-50 rounded-lg px-3 py-2">
+            <UiInput
+              className="w-full bg-transparent text-sm"
+              placeholder="请输入您的姓名"
+              value={submitterName}
+              onInput={(e) => setSubmitterName(e.detail.value)}
+            />
+          </View>
+        </View>
 
         {/* Red Line Reminder */}
         <Alert>
-          <CircleAlert size={16} color="#f59e0b" className="shrink-0" />
+          <CircleAlert size={14} color="#f59e0b" className="shrink-0" />
           <AlertDescription>
             <Text className="block text-xs text-amber-700">
-              红线提醒：禁止提交纯过程流水账（如&ldquo;周一开会，周二整理资料&rdquo;）和已达成且无风险的常规工作。触碰红线将自动退回。
+              红线：禁止提交纯流水账（如&ldquo;周一开会，周二整理资料&rdquo;）和已达成无风险的常规工作，触碰将自动退回
             </Text>
           </AlertDescription>
         </Alert>
 
         {/* Three Module Sections */}
-        {renderSection('deviation')}
-        {renderSection('collaboration')}
-        {renderSection('other')}
+        <View className="bg-white rounded-xl p-4 shadow-sm">
+          {renderSection('deviation')}
+          {renderSection('collaboration')}
+          {renderSection('other')}
+        </View>
 
         {/* Attachments */}
-        <Card>
-          <CardHeader className="pb-3">
-            <View className="flex flex-row items-center justify-between">
-              <View className="flex flex-row items-center gap-2">
-                <FileText size={16} color="#6b7280" />
-                <CardTitle className="text-base">附件</CardTitle>
+        <View className="bg-white rounded-xl p-4 shadow-sm">
+          <View className="flex flex-row items-center justify-between mb-2">
+            <View className="flex flex-row items-center gap-2">
+              <FileText size={14} color="#6b7280" />
+              <Text className="block text-sm font-semibold text-gray-800">附件</Text>
+            </View>
+            <Button variant="ghost" size="sm" onClick={handleChooseFile} disabled={uploadingFile}>
+              <Upload size={14} color="#2563eb" />
+              <Text className="text-blue-600 text-xs">{uploadingFile ? '上传中...' : '上传'}</Text>
+            </Button>
+          </View>
+          {attachments.length === 0 && (
+            <View className="py-3 flex items-center justify-center">
+              <Text className="block text-xs text-gray-400">暂无附件</Text>
+            </View>
+          )}
+          {attachments.map((att, index) => (
+            <View key={index} className="flex flex-row items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+              <View className="flex flex-row items-center gap-2 flex-1 min-w-0">
+                <FileText size={12} color="#9ca3af" className="shrink-0" />
+                <Text className="block text-sm text-gray-700 truncate">{att.name}</Text>
               </View>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleChooseFile}
-                disabled={uploadingFile}
-              >
-                <Upload size={16} color="#2563eb" />
-                <Text className="text-blue-600 text-sm">{uploadingFile ? '上传中...' : '上传'}</Text>
+              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => removeAttachment(index)}>
+                <Trash2 size={12} color="#ef4444" />
               </Button>
             </View>
-          </CardHeader>
-          <CardContent>
-            {attachments.length === 0 && (
-              <View className="py-4 flex items-center justify-center">
-                <Text className="block text-sm text-gray-400">暂无附件</Text>
-              </View>
-            )}
-            {attachments.map((att, index) => (
-              <View key={index} className="flex flex-row items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                <View className="flex flex-row items-center gap-2 flex-1 min-w-0">
-                  <FileText size={14} color="#6b7280" className="shrink-0" />
-                  <Text className="block text-sm text-gray-700 truncate">{att.name}</Text>
-                </View>
-                <Button variant="ghost" size="icon" className="shrink-0" onClick={() => removeAttachment(index)}>
-                  <Trash2 size={14} color="#ef4444" />
-                </Button>
-              </View>
-            ))}
-          </CardContent>
-        </Card>
+          ))}
+        </View>
 
         {/* Submit Button */}
         <Button
@@ -329,7 +281,7 @@ export default function IndexPage() {
           disabled={submitting}
           onClick={handleSubmit}
         >
-          <Send size={18} color="#fff" />
+          <Send size={16} color="#fff" />
           <Text className="text-white font-semibold">{submitting ? '提交中...' : '提交周报'}</Text>
         </Button>
       </View>
@@ -346,11 +298,10 @@ export default function IndexPage() {
             </DialogTitle>
           </DialogHeader>
           <View className="py-4">
-            <Text className="block text-sm text-gray-700 mb-2">您的周报内容触碰了红线，原因如下：</Text>
+            <Text className="block text-sm text-gray-700 mb-2">您的周报内容触碰了红线：</Text>
             <View className="bg-red-50 rounded-lg p-3">
               <Text className="block text-sm text-red-700">{rejectReason}</Text>
             </View>
-            <Text className="block text-xs text-gray-400 mt-3">请修改后重新提交</Text>
           </View>
           <DialogFooter>
             <Button onClick={() => setShowRejectDialog(false)} className="bg-blue-600 text-white">

@@ -114,7 +114,7 @@ export class WeeklyReportService {
     const supabase = this.getSupabase();
     const { data, error } = await supabase
       .from('weekly_reports')
-      .select('*')
+      .select('*, weekly_report_items(count)')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -122,10 +122,17 @@ export class WeeklyReportService {
       throw new Error('获取周报列表失败: ' + error.message);
     }
 
+    // Flatten item count
+    const reports = (data || []).map((r: any) => {
+      const itemCount = r.weekly_report_items?.[0]?.count ?? 0;
+      const { weekly_report_items, ...rest } = r;
+      return { ...rest, item_count: itemCount };
+    });
+
     return {
       code: 200,
       msg: 'success',
-      data: data || [],
+      data: reports,
     };
   }
 
